@@ -4,7 +4,7 @@ using WSCT.Wrapper;
 namespace WSCT.JCSimulator.Core;
 
 /// <summary>
-/// <see cref="ICardContext"/> implementation proposing a fake reader to connect to the JavaCard Simulator.
+/// Represents a PC/SC context object capable of managing a Java Card Simulator resources.
 /// </summary>
 public class JcsCardContextCore : ICardContext
 {
@@ -104,7 +104,7 @@ public class JcsCardContextCore : ICardContext
             return ErrorCode.ErrorInvalidHandle;
         }
 
-        Readers = ["JavaCard Simulator Reader"];
+        Readers = ["WSCT JavaCard Simulator Reader"];
 
         return ErrorCode.Success;
     }

@@ -41,7 +41,7 @@ public class JcsClient(IConnection connection)
     {
         if (_stream == null)
         {
-            throw new NotConnectedException();
+            throw new JavaCardSimulatorException();
         }
 
         byte[] buffer = new byte[3 + _ifsd + 1];
@@ -57,7 +57,7 @@ public class JcsClient(IConnection connection)
     {
         if (_stream == null)
         {
-            throw new NotConnectedException();
+            throw new JavaCardSimulatorException();
         }
 
         byte[] buffer = new byte[1];
@@ -73,7 +73,7 @@ public class JcsClient(IConnection connection)
     {
         if (_stream == null)
         {
-            throw new NotConnectedException();
+            throw new JavaCardSimulatorException();
         }
 
         byte[] buffer = new byte[count];
@@ -89,7 +89,7 @@ public class JcsClient(IConnection connection)
     {
         if (_stream == null)
         {
-            throw new NotConnectedException();
+            throw new JavaCardSimulatorException();
         }
 
         var nad = await ReceiveByteAsync();
@@ -108,7 +108,7 @@ public class JcsClient(IConnection connection)
     {
         if (_stream == null)
         {
-            throw new NotConnectedException();
+            throw new JavaCardSimulatorException();
         }
 
         var command = await ReceiveByteAsync();
@@ -148,7 +148,7 @@ public class JcsClient(IConnection connection)
             }
         } while (!rApduCompleted);
 
-        return new ResponseAPDU(responseApdu.ToArray());
+        return new ResponseAPDU([.. responseApdu]);
     }
 
     /// <summary>
@@ -184,7 +184,7 @@ public class JcsClient(IConnection connection)
             }
         } while (!chainingCompleted);
 
-        return information.ToArray();
+        return [.. information];
     }
 
     /// <summary>
@@ -192,13 +192,11 @@ public class JcsClient(IConnection connection)
     /// </summary>
     public async Task SendAsync(IReadOnlyCollection<byte> message)
     {
-        if (_stream == null)
-        {
-            throw new NotConnectedException();
-        }
+        JavaCardSimulatorException.ThrowIfNull(_stream);
 
         await _stream.WriteAsync(message.ToArray());
-        _stream.Flush();
+
+        await _stream.FlushAsync();
     }
 
     /// <summary>
@@ -206,13 +204,11 @@ public class JcsClient(IConnection connection)
     /// </summary>
     public async Task SendAsync(T1Block block)
     {
-        if (_stream == null)
-        {
-            throw new NotConnectedException();
-        }
+        JavaCardSimulatorException.ThrowIfNull(_stream);
 
         await _stream.WriteAsync(block.Block);
-        _stream.Flush();
+
+        await _stream.FlushAsync();
     }
 
     /// <summary>
@@ -230,7 +226,7 @@ public class JcsClient(IConnection connection)
 
             _sequenceNumber = (byte)((_sequenceNumber + 1) % 2);
 
-            var rBlock = ReceiveT1BlockAsync();
+            var rBlock = await ReceiveT1BlockAsync();
 
             // Should check for correct R-Block and sequence number
         }

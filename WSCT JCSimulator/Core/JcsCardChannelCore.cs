@@ -7,6 +7,9 @@ using WSCT.Wrapper;
 
 namespace WSCT.JCSimulator.Core;
 
+/// <summary>
+/// Represents a PC/SC channel object capable of communicating with the card running in a Java Card Simulator.
+/// </summary>
 public class JcsCardChannelCore : ICardChannel
 {
     #region >> Fields
@@ -72,7 +75,7 @@ public class JcsCardChannelCore : ICardChannel
 
             var block = await _jcSimulatorClient.ReceiveDeviceResultAsync();
 
-            return block[4..].ToArray();
+            return block[4..];
         })
             .GetAwaiter()
             .GetResult();

@@ -11,8 +11,4 @@
     <PackageReference Include="WSCT.Core" Version="6.7.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Stack\" />
-  </ItemGroup>
-
 </Project>

@@ -35,8 +35,8 @@ This project is currently a *work in progress*.
 - **Implementation for WSCT**:
   - [x] ICardContext interface
   - [x] ICardChannel interface
-  - [ ] ICardContextLayer interface
-  - [ ] ICardChannelLayer interface
+  - [x] ICardContextLayer interface
+  - [x] ICardChannelLayer interface
 
 ## Architecture overview
 
