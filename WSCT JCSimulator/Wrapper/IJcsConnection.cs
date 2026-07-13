@@ -1,11 +1,11 @@
 ﻿namespace WSCT.JCSimulator.Wrapper;
 
-public interface IConnection : IDisposable
+public interface IJcsConnection : IDisposable
 {
     /// <summary>
     /// Open the connection to the Java Card Simulator.
     /// </summary>
-    Stream Open();
+    Stream Connect();
 
     /// <summary>
     /// Close the connection to the Java Card Simulator.

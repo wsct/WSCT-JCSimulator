@@ -5,19 +5,45 @@ namespace WSCT.JCSimulator.Wrapper;
 /// <summary>
 /// Client allowing to connect to a JavaCard Simulator through TCP/IP.
 /// </summary>
-public class JcsClient(IConnection connection)
+public class JcsClient(IJcsConnection connection) : IDisposable
 {
     Stream? _stream;
     byte _ifsc = 0x20;
     byte _ifsd = 0x20;
     byte _sequenceNumber = 0;
+    private bool disposedValue;
+
+    #region >> IDisposable
+
+    /// <inheritdoc />
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                connection?.Dispose();
+            }
+
+            disposedValue = true;
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    #endregion
 
     /// <summary>
     /// Bind to the given port and waits for a connection.
     /// </summary>
     public async Task ConnectToSimulatorAsync()
     {
-        _stream = connection.Open();
+        _stream = connection.Connect();
 
         // Sequence number is always 0 after a reset
         _sequenceNumber = 0;
@@ -35,33 +61,11 @@ public class JcsClient(IConnection connection)
     }
 
     /// <summary>
-    /// Get the next incoming message from the javacard simulator
-    /// </summary>
-    public async Task<byte[]> ReceiveRawAsync()
-    {
-        if (_stream == null)
-        {
-            throw new JavaCardSimulatorException();
-        }
-
-        byte[] buffer = new byte[3 + _ifsd + 1];
-        var read = await _stream.ReadAsync(buffer, 0, buffer.Length);
-
-        return buffer[..read];
-    }
-
-    /// <summary>
     /// Get the next incoming byte from the javacard simulator
     /// </summary>
     public async Task<byte> ReceiveByteAsync()
     {
-        if (_stream == null)
-        {
-            throw new JavaCardSimulatorException();
-        }
-
-        byte[] buffer = new byte[1];
-        var read = await _stream.ReadAsync(buffer, 0, buffer.Length);
+        var buffer = await ReceiveBytesAsync(1);
 
         return buffer[0];
     }
@@ -71,15 +75,39 @@ public class JcsClient(IConnection connection)
     /// </summary>
     public async Task<byte[]> ReceiveBytesAsync(int count)
     {
-        if (_stream == null)
+        JavaCardSimulatorException.ThrowIfNull(_stream);
+
+        var buffer = new byte[count];
+        var memory = buffer.AsMemory();
+
+        int read = 0;
+
+        while (read < count)
         {
-            throw new JavaCardSimulatorException();
+            var chunkRead = await _stream.ReadAsync(memory[read..]);
+
+            if (chunkRead == 0)
+            {
+                throw new JavaCardSimulatorException("JcsClient: The stream ended unexpectedly");
+            }
+
+            read += chunkRead;
         }
 
-        byte[] buffer = new byte[count];
-        var read = await _stream.ReadAsync(buffer, 0, buffer.Length);
-
         return buffer;
+    }
+
+    /// <summary>
+    /// Get the next incoming message from the javacard simulator
+    /// </summary>
+    public async Task<byte[]> ReceiveRawAsync()
+    {
+        JavaCardSimulatorException.ThrowIfNull(_stream);
+
+        byte[] buffer = new byte[3 + _ifsd + 1];
+        var read = await _stream.ReadAsync(buffer);
+
+        return buffer[..read];
     }
 
     /// <summary>
@@ -87,10 +115,7 @@ public class JcsClient(IConnection connection)
     /// </summary>
     public async Task<T1Block> ReceiveT1BlockAsync()
     {
-        if (_stream == null)
-        {
-            throw new JavaCardSimulatorException();
-        }
+        JavaCardSimulatorException.ThrowIfNull(_stream);
 
         var nad = await ReceiveByteAsync();
         var pcb = await ReceiveByteAsync();
@@ -106,10 +131,7 @@ public class JcsClient(IConnection connection)
     /// </summary>
     public async Task<byte[]> ReceiveDeviceResultAsync()
     {
-        if (_stream == null)
-        {
-            throw new JavaCardSimulatorException();
-        }
+        JavaCardSimulatorException.ThrowIfNull(_stream);
 
         var command = await ReceiveByteAsync();
         var byte2 = await ReceiveByteAsync();
@@ -166,6 +188,7 @@ public class JcsClient(IConnection connection)
             if (iBlockResponse.BlockType == T1BlockType.IBlock)
             {
                 information.AddRange(iBlockResponse.Info);
+
                 if ((iBlockResponse.Pcb & 0x20) == 0x00)
                 {
                     chainingCompleted = true;
@@ -228,7 +251,13 @@ public class JcsClient(IConnection connection)
 
             var rBlock = await ReceiveT1BlockAsync();
 
-            // Should check for correct R-Block and sequence number
+            var expectedSequenceNumber = (byte)((_sequenceNumber + 1) % 2);
+            if (rBlock.BlockType != T1BlockType.RBlock || rBlock.GetRBlockSequenceNumber() != expectedSequenceNumber)
+            {
+                throw new JavaCardSimulatorException($"JcsClient: Expected R({expectedSequenceNumber}) from the simulator");
+            }
+
+            // TODO Should check LRC
         }
 
         var lastBlock = T1Block.CreateBlockI(chunks[^1], sequence: _sequenceNumber, chaining: false);

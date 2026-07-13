@@ -5,8 +5,8 @@ using WSCT.Wrapper;
 namespace WSCT.JCSimulator.Stack;
 
 /// <summary>
-/// Interactive context layer capable of saving data exchanges with the reader and replaying it later.
-/// Also install a fake reader, allowing replay mode to be used without physical reader.
+/// This class implements a card context layer that adds Java Card Simulator support.
+/// A dedicated fake reader is added to the context.
 /// </summary>
 public class JcsCardContextLayer : ICardContextLayer
     {

@@ -54,7 +54,7 @@ classDiagram
 		class TcpConnection 
 	}
 	IConnection <-- JcsClient 
-	IConnection <|-- TcpConnection
+	IConnection <|.. TcpConnection
 
 	namespace WSCT.Core {
 		class ICardContext
@@ -65,9 +65,25 @@ classDiagram
 		class JcsCardContextCore
 		class JcsCardChannelCore
 	}
-	ICardContext <|-- JcsCardContextCore
-	ICardChannel <|-- JcsCardChannelCore
+	ICardContext <|.. JcsCardContextCore
+	ICardChannel <|.. JcsCardChannelCore
 	JcsCardChannelCore --> JcsClient
+
+	namespace WSCT.Stack {
+		class ICardContextLayer
+		class ICardChannelLayer
+	}
+
+	namespace WSCT.JCSimulator.Stack {
+		class JcsCardContextLayer
+		class JcsCardChannelLayer
+	}
+
+	ICardContextLayer <|.. JcsCardContextLayer
+	ICardChannelLayer <|.. JcsCardChannelLayer
+	ICardContext <|-- ICardContextLayer
+	ICardChannel <|-- ICardChannelLayer
+	JcsCardChannelLayer --> JcsCardChannelCore
 
 ```
 

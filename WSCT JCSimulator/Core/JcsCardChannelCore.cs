@@ -10,7 +10,10 @@ namespace WSCT.JCSimulator.Core;
 /// <summary>
 /// Represents a PC/SC channel object capable of communicating with the card running in a Java Card Simulator.
 /// </summary>
-public class JcsCardChannelCore : ICardChannel
+/// <remarks>
+/// Initializes a new instance.
+/// </remarks>
+public class JcsCardChannelCore(JcsClient jcSimulatorClient) : ICardChannel
 {
     #region >> Fields
 
@@ -18,21 +21,8 @@ public class JcsCardChannelCore : ICardChannel
     private bool _connected = false;
     private byte[] _atr = [];
 
-    private JcsClient _jcSimulatorClient;
-
     #endregion
-
     #region >> Constructors
-
-    /// <summary>
-    /// Initializes a new instance.
-    /// </summary>
-    public JcsCardChannelCore(JcsClient jcSimulatorClient)
-    {
-        _connected = false;
-        _jcSimulatorClient = jcSimulatorClient;
-        ReaderName = "Unknown";
-    }
 
     /// <summary>
     /// Constructor (<seealso cref="Attach"/>).
@@ -54,7 +44,7 @@ public class JcsCardChannelCore : ICardChannel
     public Protocol Protocol { get; private set; }
 
     /// <inheritdoc />
-    public string ReaderName { get; private set; }
+    public string ReaderName { get; private set; } = "Unknown";
 
     /// <inheritdoc />
     public virtual void Attach(ICardContext context, string readerName)
@@ -71,9 +61,9 @@ public class JcsCardChannelCore : ICardChannel
 
         _atr = Task.Run(async Task<byte[]>? () =>
         {
-            await _jcSimulatorClient.SendAsync([0xF0, 0x00, 0x00, 0x00]);
+            await jcSimulatorClient.SendAsync([0xF0, 0x00, 0x00, 0x00]);
 
-            var block = await _jcSimulatorClient.ReceiveDeviceResultAsync();
+            var block = await jcSimulatorClient.ReceiveDeviceResultAsync();
 
             return block[4..];
         })
@@ -93,13 +83,9 @@ public class JcsCardChannelCore : ICardChannel
             return ErrorCode.ErrorInvalidHandle;
         }
 
-        Task.Run(async Task<byte[]>? () =>
+        Task.Run(async Task? () =>
         {
-            await _jcSimulatorClient.SendAsync([0xFE, 0x00, 0x00, 0x00]);
-
-            var block = await _jcSimulatorClient.ReceiveDeviceResultAsync();
-
-            return block[4..];
+            await jcSimulatorClient.SendAsync([0xFE, 0x00, 0x00, 0x00]);
         })
             .GetAwaiter()
             .GetResult();
@@ -112,19 +98,12 @@ public class JcsCardChannelCore : ICardChannel
     /// <inheritdoc />
     public virtual ErrorCode GetAttrib(Attrib attrib, ref byte[] buffer)
     {
-        switch (attrib)
+        buffer = attrib switch
         {
-            case Attrib.AtrString:
-                buffer = _atr;
-                break;
-            case Attrib.DeviceFriendlyName:
-                buffer = Encoding.Default.GetBytes(ReaderName);
-                break;
-            default:
-                buffer = Array.Empty<byte>();
-                break;
-        }
-
+            Attrib.AtrString => _atr,
+            Attrib.DeviceFriendlyName => Encoding.Default.GetBytes(ReaderName),
+            _ => [],
+        };
         return ErrorCode.Success;
     }
 
@@ -153,9 +132,9 @@ public class JcsCardChannelCore : ICardChannel
     {
         var bytes = Task.Run(async Task<byte[]>? () =>
         {
-            await _jcSimulatorClient.SendCommandAPDUAsync(new CommandAPDU(command.BinaryCommand));
+            await jcSimulatorClient.SendCommandAPDUAsync(new CommandAPDU(command.BinaryCommand));
 
-            var bytes = await _jcSimulatorClient.ReceiveInformationAsync();
+            var bytes = await jcSimulatorClient.ReceiveInformationAsync();
 
             return bytes;
         })

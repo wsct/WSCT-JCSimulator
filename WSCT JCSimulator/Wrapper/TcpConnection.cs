@@ -3,7 +3,7 @@ using System.Net.Sockets;
 
 namespace WSCT.JCSimulator.Wrapper;
 
-public class TcpConnection(string ip = "127.0.0.1", int port = 9025) : IConnection
+public class TcpConnection(string ip = "127.0.0.1", int port = 9025) : IJcsConnection
 {
     Socket? _socket;
     Stream? _stream;
@@ -38,17 +38,24 @@ public class TcpConnection(string ip = "127.0.0.1", int port = 9025) : IConnecti
     #region >> IConnection
 
     /// <inheritdoc />
-    public Stream Open()
+    /// <exception cref="JavaCardSimulatorException" />
+    public Stream Connect()
     {
         var address = Dns.GetHostAddresses(ip, AddressFamily.InterNetwork).First();
         var endpoint = new IPEndPoint(address, port);
 
-        _socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+        try
+        {
+            _socket = new Socket(address.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
-        // Connect to the client using specified endpoint
-        _socket.Connect(endpoint);
+            // Connect to the client using specified endpoint
+            _socket.Connect(endpoint);
+        }
+        catch (Exception e)
+        {
+            throw new JavaCardSimulatorException($"TCP Connection failed: {e.Message}");
+        }
 
-        // Get output (client to server) and input (server to client) streams
         _stream = new NetworkStream(_socket);
 
         return _stream;

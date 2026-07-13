@@ -99,4 +99,9 @@ public record T1Block(byte[] Block)
 
         return new T1Block([0x00, (byte)pcb, (byte)info.Length, .. info, (byte)lrc]);
     }
+
+    public byte GetRBlockSequenceNumber()
+    {
+        return (byte)((Pcb & 0x40) >> 4);
+    }
 }
