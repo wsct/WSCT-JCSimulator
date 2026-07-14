@@ -1,4 +1,4 @@
-﻿using WSCT.Core;
+using WSCT.Core;
 using WSCT.Core.APDU;
 using WSCT.JCSimulator.Core;
 using WSCT.JCSimulator.Wrapper;
@@ -9,7 +9,7 @@ namespace WSCT.JCSimulator.Stack;
 
 /// <summary>
 /// This class implements a card channel layer that adds Java Card Simulator support.
-/// The simulator is expected to be running and listening on 127.0.0.1:9025.
+/// The simulator is expected to be running and listening on 127.0.0.1:9025 (default <see cref="TcpConnection"/>).
 /// </summary>
 public class JcsCardChannelLayer : ICardChannelLayer
 {
@@ -79,12 +79,12 @@ public class JcsCardChannelLayer : ICardChannelLayer
     /// <inheritdoc />
     public void Attach(ICardContext context, string readerName)
     {
-        _isSimulatorActive = (readerName == "WSCT JavaCard Simulator Reader");
+        _isSimulatorActive = (readerName == JcsCardContextCore.SimulatorReaderName);
 
         if (_isSimulatorActive)
         {
             var jcsClient = new JcsClient(new TcpConnection());
-            Task.Run(jcsClient.ConnectToSimulatorAsync)
+            Task.Run(jcsClient.ConnectToSimulator)
                 .GetAwaiter()
                 .GetResult();
             _jcsChannel = new JcsCardChannelCore(context, readerName, jcsClient);

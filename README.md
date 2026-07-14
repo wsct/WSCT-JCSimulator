@@ -50,11 +50,11 @@ classDiagram
 	direction TB
 	namespace WSCT.JCSimulator.Wrapper {
 		class JcsClient
-		class IConnection 
+		class IJcsConnection 
 		class TcpConnection 
 	}
-	IConnection <-- JcsClient 
-	IConnection <|.. TcpConnection
+	IJcsConnection <-- JcsClient 
+	IJcsConnection <|.. TcpConnection
 
 	namespace WSCT.Core {
 		class ICardContext
@@ -98,7 +98,7 @@ context.Establish().Dump("Establish");
 context.ListReaders("").Dump("listReaders");
 context.Readers.Dump();
 
-var jcSimulatorClient = new Client(new TcpConnection("127.0.0.1", 9025));
+var jcSimulatorClient = new JcsClient(new TcpConnection("127.0.0.1", 9025));
 await jcSimulatorClient.ConnectToSimulatorAsync();
 
 var channel = new JcsCardChannelCore(context, context.Readers.Last(), jcSimulatorClient);
@@ -127,7 +127,7 @@ context.Release()
   ### Using the raw wrapper (LinqPad script)
 
 ```csharp
-var jcSimulatorClient = new Client(new TcpConnection("127.0.0.1", 9025));
+var jcSimulatorClient = new JcsClient(new TcpConnection("127.0.0.1", 9025));
 
 await jcSimulatorClient.ConnectToSimulatorAsync();
 

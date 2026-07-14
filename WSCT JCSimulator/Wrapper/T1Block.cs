@@ -102,6 +102,6 @@ public record T1Block(byte[] Block)
 
     public byte GetRBlockSequenceNumber()
     {
-        return (byte)((Pcb & 0x40) >> 4);
+        return (byte)((Pcb & 0x10) >> 4);
     }
 }

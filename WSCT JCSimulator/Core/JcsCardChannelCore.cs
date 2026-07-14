@@ -13,13 +13,14 @@ namespace WSCT.JCSimulator.Core;
 /// <remarks>
 /// Initializes a new instance.
 /// </remarks>
-public class JcsCardChannelCore(JcsClient jcSimulatorClient) : ICardChannel
+public class JcsCardChannelCore(JcsClient jcsClient) : ICardChannel, IDisposable
 {
     #region >> Fields
 
     private ICardContext? _context = null;
     private bool _connected = false;
     private byte[] _atr = [];
+    private bool disposedValue;
 
     #endregion
     #region >> Constructors
@@ -61,9 +62,9 @@ public class JcsCardChannelCore(JcsClient jcSimulatorClient) : ICardChannel
 
         _atr = Task.Run(async Task<byte[]>? () =>
         {
-            await jcSimulatorClient.SendAsync([0xF0, 0x00, 0x00, 0x00]);
+            await jcsClient.SendAsync([0xF0, 0x00, 0x00, 0x00]);
 
-            var block = await jcSimulatorClient.ReceiveDeviceResultAsync();
+            var block = await jcsClient.ReceiveDeviceResultAsync();
 
             return block[4..];
         })
@@ -85,7 +86,7 @@ public class JcsCardChannelCore(JcsClient jcSimulatorClient) : ICardChannel
 
         Task.Run(async Task? () =>
         {
-            await jcSimulatorClient.SendAsync([0xFE, 0x00, 0x00, 0x00]);
+            await jcsClient.SendAsync([0xFE, 0x00, 0x00, 0x00]);
         })
             .GetAwaiter()
             .GetResult();
@@ -132,9 +133,9 @@ public class JcsCardChannelCore(JcsClient jcSimulatorClient) : ICardChannel
     {
         var bytes = Task.Run(async Task<byte[]>? () =>
         {
-            await jcSimulatorClient.SendCommandAPDUAsync(new CommandAPDU(command.BinaryCommand));
+            await jcsClient.SendCommandAPDUAsync(new CommandAPDU(command.BinaryCommand));
 
-            var bytes = await jcSimulatorClient.ReceiveInformationAsync();
+            var bytes = await jcsClient.ReceiveInformationAsync();
 
             return bytes;
         })
@@ -144,6 +145,32 @@ public class JcsCardChannelCore(JcsClient jcSimulatorClient) : ICardChannel
         response.Parse(bytes);
 
         return ErrorCode.Success;
+    }
+
+    #endregion
+
+    #region >> IDisposable
+
+    /// <inheritdoc />
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposedValue)
+        {
+            if (disposing)
+            {
+                jcsClient.Dispose();
+                jcsClient = null!;
+            }
+
+            disposedValue = true;
+        }
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
     }
 
     #endregion

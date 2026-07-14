@@ -1,4 +1,4 @@
-﻿using WSCT.Core;
+using WSCT.Core;
 using WSCT.Wrapper;
 
 namespace WSCT.JCSimulator.Core;
@@ -8,6 +8,15 @@ namespace WSCT.JCSimulator.Core;
 /// </summary>
 public class JcsCardContextCore : ICardContext
 {
+    #region >> Constants
+
+    /// <summary>
+    /// Name of the virtual reader exposed by the Java Card Simulator.
+    /// </summary>
+    public const string SimulatorReaderName = "WSCT JavaCard Simulator Reader";
+
+    #endregion
+
     #region >> Fields
 
     private bool _established = false;
@@ -104,7 +113,7 @@ public class JcsCardContextCore : ICardContext
             return ErrorCode.ErrorInvalidHandle;
         }
 
-        Readers = ["WSCT JavaCard Simulator Reader"];
+        Readers = [SimulatorReaderName];
 
         return ErrorCode.Success;
     }

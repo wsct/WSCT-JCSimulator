@@ -3,7 +3,7 @@
 namespace WSCT.JCSimulator.Wrapper;
 
 /// <summary>
-/// Client allowing to connect to a JavaCard Simulator through TCP/IP.
+/// Client allowing to connect to a JavaCard Simulator using a given <see cref="IJcsConnection"/>.
 /// </summary>
 public class JcsClient(IJcsConnection connection) : IDisposable
 {
@@ -41,7 +41,7 @@ public class JcsClient(IJcsConnection connection) : IDisposable
     /// <summary>
     /// Bind to the given port and waits for a connection.
     /// </summary>
-    public async Task ConnectToSimulatorAsync()
+    public void ConnectToSimulator()
     {
         _stream = connection.Connect();
 

@@ -2,7 +2,6 @@
 
 namespace WSCT.JCSimulator.Wrapper;
 
-
 /// <summary>
 /// Exception thrown when a Java Card Simulator error occurs.
 /// </summary>
