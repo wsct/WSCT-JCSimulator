@@ -53,7 +53,11 @@ public class JcsCardContextLayer : ICardContextLayer
         {
             JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-            return _stack.RequestLayer(this, SearchMode.Next).Groups;
+            var groups = _stack.RequestLayer(this, SearchMode.Next).Groups;
+
+            groups = [.. groups, .. _context.Groups];
+
+            return groups;
         }
     }
 
@@ -77,7 +81,7 @@ public class JcsCardContextLayer : ICardContextLayer
 
             var readers = _stack.RequestLayer(this, SearchMode.Next).Readers;
 
-            readers = [.. _context.Readers, .. readers];
+            readers = [.. readers, .. _context.Readers];
 
             return readers;
         }

@@ -1,0 +1,37 @@
+<Project>
+
+    <PropertyGroup>
+        <Company>ENSICAEN</Company>
+        <Authors>Sylvain Vernois</Authors>
+        <Copyright>Copyright © Sylvain Vernois / ENSICAEN 2026-$([System.DateTime]::Now.Year)</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/wsct/WSCT-JCSimulator</RepositoryUrl>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Deterministic>true</Deterministic>
+        <TargetFrameworks>net10.0</TargetFrameworks>
+        <LangVersion>latest</LangVersion>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <!--GenerateDocumentationFile>true</GenerateDocumentationFile-->
+        <!-- https://docs.microsoft.com/en-us/dotnet/core/project-sdk/msbuild-props#satelliteresourcelanguages -->
+        <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AssemblyName>$(MSBuildProjectName)</AssemblyName>
+        <RootNamespace>$(AssemblyName)</RootNamespace>
+        <PackageOutputPath>../nuget/$(Configuration)</PackageOutputPath>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <UseArtifactsOutput>false</UseArtifactsOutput>
+        <ArtifactsPath>$(MSBuildThisFileDirectory)\.artifacts</ArtifactsPath>
+    </PropertyGroup>
+    
+</Project>

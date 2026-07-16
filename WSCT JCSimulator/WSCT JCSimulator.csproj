@@ -1,14 +1,30 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <RootNamespace>WSCT.JCSimulator</RootNamespace>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Library</OutputType>
+		<Version>1.0.0</Version>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="WSCT.Core" Version="6.7.1" />
-  </ItemGroup>
+	<PropertyGroup>
+		<PackageId>WSCT.JCSimulator</PackageId>
+		<RootNamespace>WSCT.JCSimulator</RootNamespace>
+		<Description>
+			A library for using WSCT with the official Java Card Simulator (Oracle).
+			It is intended for use at ENSICAEN, for educational purposes (e-payment and security).
+		</Description>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="WSCT.Core" />
+	</ItemGroup>
 
 </Project>
