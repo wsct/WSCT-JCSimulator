@@ -247,8 +247,6 @@ public class JcsClient(IJcsConnection connection) : IDisposable
 
             await SendAsync(chainedBlock);
 
-            _sequenceNumber = (byte)((_sequenceNumber + 1) % 2);
-
             var rBlock = await ReceiveT1BlockAsync();
 
             var expectedSequenceNumber = (byte)((_sequenceNumber + 1) % 2);
@@ -258,6 +256,8 @@ public class JcsClient(IJcsConnection connection) : IDisposable
             }
 
             // TODO Should check LRC
+
+            _sequenceNumber = (byte)((_sequenceNumber + 1) % 2);
         }
 
         var lastBlock = T1Block.CreateBlockI(chunks[^1], sequence: _sequenceNumber, chaining: false);
