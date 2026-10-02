@@ -54,7 +54,7 @@ public class JcsCardChannelLayer : ICardChannelLayer
 
             JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-            return _stack.RequestLayer(this, SearchMode.Next).Protocol;
+            return GetNextLayer(_stack)?.Protocol ?? Protocol.Unset;
         }
     }
 
@@ -72,7 +72,7 @@ public class JcsCardChannelLayer : ICardChannelLayer
 
             JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-            return _stack.RequestLayer(this, SearchMode.Next).ReaderName;
+            return GetNextLayer(_stack)?.ReaderName ?? string.Empty;
         }
     }
 
@@ -98,7 +98,7 @@ public class JcsCardChannelLayer : ICardChannelLayer
 
         JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-        _stack.RequestLayer(this, SearchMode.Next).Attach(context, readerName);
+        GetNextLayer(_stack)?.Attach(context, readerName);
     }
 
     /// <inheritdoc />
@@ -113,7 +113,7 @@ public class JcsCardChannelLayer : ICardChannelLayer
 
         JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-        return _stack.RequestLayer(this, SearchMode.Next).Connect(shareMode, preferedProtocol);
+        return GetNextLayer(_stack)?.Connect(shareMode, preferedProtocol) ?? ErrorCode.Success;
     }
 
     /// <inheritdoc />
@@ -128,7 +128,7 @@ public class JcsCardChannelLayer : ICardChannelLayer
 
         JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-        return _stack.RequestLayer(this, SearchMode.Next).Disconnect(disposition);
+        return GetNextLayer(_stack)?.Disconnect(disposition) ?? ErrorCode.Success;
     }
 
     /// <inheritdoc />
@@ -143,7 +143,7 @@ public class JcsCardChannelLayer : ICardChannelLayer
 
         JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-        return _stack.RequestLayer(this, SearchMode.Next).GetAttrib(attrib, ref buffer);
+        return GetNextLayer(_stack)?.GetAttrib(attrib, ref buffer) ?? ErrorCode.Success;
     }
 
     /// <inheritdoc />
@@ -158,7 +158,7 @@ public class JcsCardChannelLayer : ICardChannelLayer
 
         JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-        return _stack.RequestLayer(this, SearchMode.Next).GetStatus();
+        return GetNextLayer(_stack)?.GetStatus() ?? State.Unknown;
     }
 
     /// <inheritdoc />
@@ -173,7 +173,7 @@ public class JcsCardChannelLayer : ICardChannelLayer
 
         JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-        return _stack.RequestLayer(this, SearchMode.Next).Reconnect(shareMode, preferedProtocol, initialization);
+        return GetNextLayer(_stack)?.Reconnect(shareMode, preferedProtocol, initialization) ?? ErrorCode.Success;
     }
 
     /// <inheritdoc />
@@ -188,8 +188,20 @@ public class JcsCardChannelLayer : ICardChannelLayer
 
         JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-        return _stack.RequestLayer(this, SearchMode.Next).Transmit(command, response);
+        return GetNextLayer(_stack)?.Transmit(command, response) ?? ErrorCode.Success;
     }
 
     #endregion
+
+    private ICardChannelLayer? GetNextLayer(ICardChannelStack stack)
+    {
+        try
+        {
+            return stack.RequestLayer(this, SearchMode.Next);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
 }

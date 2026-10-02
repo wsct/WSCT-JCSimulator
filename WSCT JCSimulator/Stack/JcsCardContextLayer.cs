@@ -42,7 +42,7 @@ public class JcsCardContextLayer : ICardContextLayer
         {
             JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-            return _stack.RequestLayer(this, SearchMode.Next).Context;
+            return GetNextLayer(_stack)?.Context ?? IntPtr.Zero;
         }
     }
 
@@ -53,7 +53,7 @@ public class JcsCardContextLayer : ICardContextLayer
         {
             JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-            var groups = _stack.RequestLayer(this, SearchMode.Next).Groups;
+            var groups = GetNextLayer(_stack)?.Groups ?? ["WSCT Fake Reader Group"];
 
             groups = [.. groups, .. _context.Groups];
 
@@ -68,7 +68,7 @@ public class JcsCardContextLayer : ICardContextLayer
         {
             JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-            return _stack.RequestLayer(this, SearchMode.Next).GroupsCount;
+            return GetNextLayer(_stack)?.GroupsCount ?? 1;
         }
     }
 
@@ -79,7 +79,7 @@ public class JcsCardContextLayer : ICardContextLayer
         {
             JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-            var readers = _stack.RequestLayer(this, SearchMode.Next).Readers;
+            var readers = GetNextLayer(_stack)?.Readers ?? [];
 
             readers = [.. readers, .. _context.Readers];
 
@@ -94,7 +94,7 @@ public class JcsCardContextLayer : ICardContextLayer
         {
             JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-            var readersCount = _stack.RequestLayer(this, SearchMode.Next).ReadersCount;
+            var readersCount = GetNextLayer(_stack)?.ReadersCount ?? 0;
 
             readersCount += _context.Readers.Count();
 
@@ -107,7 +107,7 @@ public class JcsCardContextLayer : ICardContextLayer
     {
         JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-        return _stack.RequestLayer(this, SearchMode.Next).Cancel();
+        return GetNextLayer(_stack)?.Cancel() ?? ErrorCode.Success;
     }
 
     /// <inheritdoc />
@@ -117,7 +117,7 @@ public class JcsCardContextLayer : ICardContextLayer
 
         _context.Establish();
 
-        return _stack.RequestLayer(this, SearchMode.Next).Establish();
+        return GetNextLayer(_stack)?.Establish() ?? ErrorCode.Success;
     }
 
     /// <inheritdoc />
@@ -131,7 +131,7 @@ public class JcsCardContextLayer : ICardContextLayer
         {
             JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-            return _stack.RequestLayer(this, SearchMode.Next).GetStatusChange(timeout, readerStates);
+            return GetNextLayer(_stack)?.GetStatusChange(timeout, readerStates) ?? ErrorCode.Success;
         }
 
         if (readerStates.Length <= 1)
@@ -144,7 +144,7 @@ public class JcsCardContextLayer : ICardContextLayer
 
         JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-        return _stack.RequestLayer(this, SearchMode.Next).GetStatusChange(timeout, filteredReaderStates);
+        return GetNextLayer(_stack)?.GetStatusChange(timeout, filteredReaderStates) ?? ErrorCode.Success;
     }
 
     /// <inheritdoc />
@@ -152,7 +152,7 @@ public class JcsCardContextLayer : ICardContextLayer
     {
         JavaCardSimulatorLayerException.ThrowIfNull(_stack);
 
-        return _stack.RequestLayer(this, SearchMode.Next).IsValid();
+        return GetNextLayer(_stack)?.IsValid() ?? ErrorCode.Success;
     }
 
     /// <inheritdoc />
@@ -162,7 +162,7 @@ public class JcsCardContextLayer : ICardContextLayer
 
         _context.ListReaders(group);
 
-        var ret = _stack.RequestLayer(this, SearchMode.Next).ListReaders(group);
+        var ret = GetNextLayer(_stack)?.ListReaders(group) ?? ErrorCode.Success;
 
         ret = ErrorCode.Success;
 
@@ -176,7 +176,7 @@ public class JcsCardContextLayer : ICardContextLayer
 
         _context.ListReaderGroups();
 
-        return _stack.RequestLayer(this, SearchMode.Next).ListReaderGroups();
+        return GetNextLayer(_stack)?.ListReaderGroups() ?? ErrorCode.Success;
     }
 
     /// <inheritdoc />
@@ -186,8 +186,20 @@ public class JcsCardContextLayer : ICardContextLayer
 
         _context.Release();
 
-        return _stack.RequestLayer(this, SearchMode.Next).Release();
+        return GetNextLayer(_stack)?.Release() ?? ErrorCode.Success;
     }
 
     #endregion
+
+    private ICardContextLayer? GetNextLayer(ICardContextStack stack)
+    {
+        try
+        {
+            return stack.RequestLayer(this, SearchMode.Next);
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+    }
 }

@@ -2,7 +2,8 @@
 
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
-		<Version>1.1.0</Version>
+		<VersionPrefix>1.2.0</VersionPrefix>
+		<VersionSuffix></VersionSuffix>
 	</PropertyGroup>
 
 	<PropertyGroup>
